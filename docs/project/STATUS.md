@@ -1,12 +1,14 @@
 # Current status
 
-Updated: November 14, 2026 (KST).
+Updated: November 15, 2026 (KST).
 
-This workspace was reconnected to `origin/feat/first-beta` after initially opening on `origin/main`, whose preparation-only status is stale for the beta. The latest local verification is below; it does not replace device or funded acceptance.
+This workspace was reconnected to `origin/feat/first-beta` after initially opening on `origin/main`, whose preparation-only status is stale for the beta. The latest local verification is below; it does not replace full device, refund or funded acceptance.
 
-Phase: the repository is public and the beta is merged into `main`, with reproducible local simulation, screenshots and a narrated video. The native Vercel public pilot is READY at https://split-d-bill.vercel.app; anyone with the URL can create live Solana/Zcash payment requests, while payer and organizer capabilities remain scoped. The separate Sites preview remains owner-private. Confidential sending is disabled and all acceptance flags remain false. Supabase migrations 001–007 are applied; receipt cleanup is disabled. Real wallet/device, refund and funded confidential-credit acceptance and OCR remain outstanding. Supabase Cron/Vault reconciliation runs every minute and an HTTP 200 empty-run response is verified. No hackathon entry has been submitted.
+Latest user-reported evidence: a supplied screenshot shows a live Solana checkout marked “Payment complete” for 20.50 USDC, and the user confirms the near.com confidential recipient balance received it. The transaction and balance were not independently verified. This single report does not establish refund or device-matrix acceptance; all acceptance flags remain false.
 
-Supabase migration 007 and the equivalent local D1 migration 0003 prevent saving duplicate live deposit address/memo pairs across shares atomically. The hosted Supabase index and Vercel owner-pilot app code were applied and verified at the deployment level; funded behavior remains untested.
+Phase: the repository is public and the beta is merged into `main`, with reproducible local simulation, screenshots and a narrated video. The native Vercel public pilot is READY at https://split-d-bill.vercel.app; anyone with the URL can create live Solana/Zcash payment requests, while payer and organizer capabilities remain scoped. The separate Sites preview remains owner-private. Confidential sending is disabled and all acceptance flags remain false. Supabase migrations 001–007 are applied; receipt cleanup is disabled. One user-reported funded Solana-to-confidential payment is recorded above; full wallet/device, refund and funded acceptance and OCR remain outstanding. Supabase Cron/Vault reconciliation runs every minute and an HTTP 200 empty-run response is verified. No hackathon entry has been submitted.
+
+Supabase migration 007 and the equivalent local D1 migration 0003 prevent saving duplicate live deposit address/memo pairs across shares atomically. The hosted Supabase index and Vercel owner-pilot app code were applied and verified at the deployment level; memo-free Solana requests therefore require different displayed deposit addresses regardless of upstream allocation behavior.
 
 Preview: [https://split-d-bill-beta.snu-chatgpt-5678.chatgpt.site](https://split-d-bill-beta.snu-chatgpt-5678.chatgpt.site) — owner-only, ChatGPT sign-in required.
 
@@ -134,7 +136,7 @@ NEAR AI key is configured locally and remains ignored by Git. It has not been au
 
 ## Known boundaries
 
-Private balances are documented and authentication was tested. Recipient identity privacy across the entire proposed flow is not yet proved. Basic versus advanced guarantees and confidential quote auth composition need partner clarification. Fee/deadline docs/runtime differences are recorded in the technical dossier. The Sites pilot is owner-private and the Vercel pilot is public; no funded transfer or verified confidential credit occurred.
+Private balances are documented and authentication was tested. Recipient identity privacy across the entire proposed flow is not yet proved. Basic versus advanced guarantees and confidential quote auth composition need partner clarification. Fee/deadline docs/runtime differences are recorded in the technical dossier. The Sites pilot is owner-private and the Vercel pilot is public; see the reported Solana payment and credit below for later evidence.
 
 Deadline: November 15, 2026, 08:59 KST (November 14, 23:59 UTC).
 
