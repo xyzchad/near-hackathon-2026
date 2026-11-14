@@ -15,7 +15,7 @@ export function paymentReadiness(settings: Record<string, string | undefined>, l
   return {
     enabled: zcash || confidential || solana,
     testing,
-    reason: testing ? 'Pilot testing uses real funds. Wallet, refund and settlement acceptance is incomplete; this is not a verified rollout.' : zcash || confidential || solana ? 'Enabled payment methods require payer authorization.' : 'Live payments need wallet authorization, supported refunds and verified settlement.',
+    reason: testing ? 'Payments use real funds. Wallet, refund and settlement acceptance is incomplete.' : zcash || confidential || solana ? 'Enabled payment methods require payer authorization.' : 'Live payments need wallet authorization, supported refunds and verified settlement.',
     methods: {zcash, confidential, solana},
   };
 }
