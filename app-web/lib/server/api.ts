@@ -2,7 +2,7 @@ import { z } from "zod";
 import { allocation, billInput, currencies } from "../money";
 import { shareStatus, transition, Status } from "../payments";
 import { getRate } from "../providers/fx";
-import { imageType, extractReceipt } from "../providers/receipt";
+import { imageType, extractReceipt, ReceiptExtractionError } from "../providers/receipt";
 import { receivingAccount, displayReceivingAddress } from "../receiving";
 import { liveReadiness, paymentReadiness } from "../providers/near";
 import { IntentsError } from "../providers/intents";
@@ -226,7 +226,15 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
             await limit("global:ocr", PUBLIC_HOURLY_BUDGETS.ocr);
             await limit("ocr:" + ownerHash, 3);
             extracted = await extractReceipt(bytes, mime, payments.ocr.key, payments.ocr.model);
-          } catch { /* Keep the saved receipt and allow manual entry. */ }
+          } catch (error) {
+            // Log only a fixed category. Never log the receipt, model response, or key.
+            const category = error instanceof ReceiptExtractionError
+              ? error.code
+              : error instanceof HttpError
+                ? "rate_limit"
+                : "network_or_timeout";
+            console.warn("Receipt extraction unavailable", category);
+          }
         }
         return json(
           {
