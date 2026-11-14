@@ -264,19 +264,26 @@ test("owner live testing labels checkout and organizer as real funds", async ({ 
   data.live = { enabled: true, testing: true, reason: "Wallet, refund and settlement acceptance is incomplete.", methods: {zcash: true, solana: true, confidential: false} };
   await page.route("**/api/shares/share-test", route => route.fulfill({json: data}));
   await page.goto("/pay?id=share-test");
-  await expect(page.getByText("Live testing · Real funds", {exact: true})).toBeVisible();
+  await expect(page.getByText("Pilot testing · Real funds", {exact: true})).toBeVisible();
   await expect(page.getByText("Wallet, refund and settlement acceptance is incomplete.", {exact: true})).toBeVisible();
   await expect(page.getByText("Demo · No real payments", {exact: true})).toHaveCount(0);
   await page.route("**/api/bills/bill-test", route => route.fulfill({json: {...data, shares: [], receivingAddress: null}}));
   await page.goto("/bill?id=bill-test");
-  await expect(page.getByText("Live testing · Real funds", {exact: true})).toBeVisible();
+  await expect(page.getByText("Pilot testing · Real funds", {exact: true})).toBeVisible();
 });
 
 test("sample stays visibly demo during owner live testing", async ({ page }) => {
-  await page.route("**/api/config", route => route.fulfill({json: {live: {enabled: true, testing: true}}}));
+  await page.route("**/api/config", route => route.fulfill({json: {publicPilot: false, live: {enabled: true, testing: true}}}));
   await page.goto("/");
-  await expect(page.getByText("Live testing · Real funds", {exact: true})).toBeVisible();
+  await expect(page.getByText("Pilot testing · Real funds", {exact: true})).toBeVisible();
   await page.getByRole("button", {name: "Try a sample bill"}).click();
   await expect(page.getByText("Demo · No real payments", {exact: true})).toBeVisible();
-  await expect(page.getByText("Live testing · Real funds", {exact: true})).toHaveCount(0);
+  await expect(page.getByText("Pilot testing · Real funds", {exact: true})).toHaveCount(0);
+});
+
+test("public live pilot does not offer a sample bill", async ({ page }) => {
+  await page.route("**/api/config", route => route.fulfill({json: {publicPilot: true, live: {enabled: true, testing: true}}}));
+  await page.goto("/");
+  await expect(page.getByText("Pilot testing · Real funds", {exact: true})).toBeVisible();
+  await expect(page.getByRole("button", {name: "Try a sample bill"})).toHaveCount(0);
 });

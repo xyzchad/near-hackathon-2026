@@ -116,6 +116,24 @@ async function dinner() {
     cookie: response.headers.get("set-cookie")!.split(";")[0],
   };
 }
+test("public pilot keeps existing demo records readable but disables demo mutations", async () => {
+  const { data } = await dinner();
+  const share = data.shares[0];
+  const access = await call(`/shares/${share.id}/access`, "POST", { token: share.token });
+  const shareCookie = access.headers.get("set-cookie")!.split(";")[0];
+  const publicHandle = createHandler(supabaseStore("https://database.test", "test-server-key"), undefined, { publicPilot: true });
+  const publicCall = (path: string, method = "GET", body?: unknown, cookie = session) => publicHandle(new Request(`${origin}/api${path}`, {
+    method, headers: { Origin: origin, "Content-Type": "application/json", Cookie: cookie },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  }));
+  expect(await publicCall("/config").then(r => r.json())).toMatchObject({ publicPilot: true });
+  expect((await publicCall("/bills", "POST", input())).status).toBe(403);
+  const checkout = await publicCall(`/shares/${share.id}`, "GET", undefined, shareCookie);
+  expect(checkout.status).toBe(200);
+  expect(await checkout.json()).toMatchObject({ publicPilot: true });
+  expect((await publicCall(`/shares/${share.id}/attempts`, "POST", { method: "zcash", requestKey: crypto.randomUUID() }, shareCookie)).status).toBe(403);
+  expect((await publicCall(`/shares/${share.id}/simulate`, "POST", { attemptId: crypto.randomUUID(), status: "paid" }, shareCookie)).status).toBe(403);
+});
 test("Supabase saves an entire bill, normalizes money/timestamps, and preserves private access", async () => {
   const { body, data, cookie } = await dinner();
   expect(data.shares).toHaveLength(2);

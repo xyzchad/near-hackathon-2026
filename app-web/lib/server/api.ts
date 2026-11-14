@@ -22,6 +22,7 @@ import {
 import type { Store, Bill, Share, Attempt } from "./store";
 const uuid = z.string().uuid();
 export type PaymentOptions = {
+  publicPilot?: boolean;
   receiptCleanupEnabled?: boolean;
   provider?: LivePaymentProvider;
   readiness?: ReturnType<typeof paymentReadiness>;
@@ -132,6 +133,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
         return { ...view, payment: saved ? await livePaymentView(store, saved) : undefined };
       })),
       live: readiness,
+      publicPilot: payments.publicPilot === true,
     };
   }
   async function readBytes(req: Request, max: number) {
@@ -177,6 +179,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
       if (resource === "config" && method === "GET")
         return json({
           mode: readiness.enabled ? "live" : "demo",
+          publicPilot: payments.publicPilot === true,
           live: readiness,
           ocr: false,
           storage: true,
@@ -231,6 +234,8 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
         await limit("global:create", PUBLIC_HOURLY_BUDGETS.create);
         await limit("create:" + (await hash(master)), 20);
         const body = billInput.parse(await readJson(req));
+        if (payments.publicPilot && body.mode === "demo")
+          throw new HttpError(403, "Demo bills are unavailable on this deployment.");
         if (body.mode === "live" && (!readiness.enabled || !payments.provider))
           throw new HttpError(503, readiness.reason);
         const token = await shareToken(master, body.requestKey),
@@ -388,6 +393,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
             { ...body, refundAddress: body.refundAddress || "" }, requestReadiness.methods);
           return json(await checkout(share, bill, requestReadiness), 201);
         }
+        if (payments.publicPilot) throw new HttpError(403, "Demo payments are unavailable on this deployment.");
         await limit("attempt:" + id, 40);
         const current = await store.attempts(id);
         const previous = current.find((a) => a.request_key === body.requestKey);
@@ -443,6 +449,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
         method === "POST"
       ) {
         const { share, bill } = await authorizedShare(req, id);
+        if (payments.publicPilot) throw new HttpError(403, "Demo payments are unavailable on this deployment.");
         if (bill.mode !== "demo")
           throw new HttpError(403, "Simulation is disabled for live bills.");
         const body = z

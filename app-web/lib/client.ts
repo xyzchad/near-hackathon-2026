@@ -96,6 +96,7 @@ export type Dashboard = {
   organizerToken?: string;
 };
 export type Checkout = {
+  publicPilot?: boolean;
   bill: BillView;
   share: ShareView;
   attempts: AttemptView[];

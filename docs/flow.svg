@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 280" role="img" aria-labelledby="title desc">
+  <title id="title">How split/d/bill works</title>
+  <desc id="desc">A shared receipt becomes three separate private payment requests, which reimburse the organizer in confidential USDC.</desc>
+  <rect width="960" height="280" fill="#f3f4ef"/>
+  <g font-family="'Space Grotesk',Arial,sans-serif" fill="#202c29">
+    <rect x="24" y="32" width="226" height="216" fill="#ffffff" stroke="#14645e" stroke-width="2"/>
+    <path d="M50 62h72m-72 14h50m-50 60h174m-174 17h174m-174 17h174" stroke="#14645e" stroke-width="3"/>
+    <text x="50" y="119" font-size="23" font-weight="700">One receipt</text>
+    <text x="50" y="218" font-size="15">Confirm total + currency</text>
+
+    <path d="M271 140h59m-15-13 15 13-15 13" fill="none" stroke="#14645e" stroke-width="3" stroke-linecap="square"/>
+    <text x="343" y="25" font-size="16" font-weight="700" fill="#14645e">Separate checkout links</text>
+    <g font-size="17" font-weight="700">
+      <rect x="338" y="43" width="258" height="60" fill="#ffffff" stroke="#14645e" stroke-width="2"/>
+      <rect x="338" y="111" width="258" height="60" fill="#ffffff" stroke="#14645e" stroke-width="2"/>
+      <rect x="338" y="179" width="258" height="60" fill="#ffffff" stroke="#14645e" stroke-width="2"/>
+      <text x="355" y="80">Friend 1</text><text x="464" y="80" font-size="13" font-weight="400">Address A</text>
+      <text x="355" y="148">Friend 2</text><text x="464" y="148" font-size="13" font-weight="400">Address B</text>
+      <text x="355" y="216">Friend 3</text><text x="464" y="216" font-size="13" font-weight="400">Address C</text>
+    </g>
+    <path d="M613 140h59m-15-13 15 13-15 13" fill="none" stroke="#14645e" stroke-width="3" stroke-linecap="square"/>
+
+    <rect x="688" y="32" width="248" height="216" fill="#14645e"/>
+    <g fill="#f3f4ef">
+      <circle cx="812" cy="97" r="30" fill="none" stroke="#f3f4ef" stroke-width="3"/>
+      <path d="m799 97 9 9 17-19" fill="none" stroke="#f3f4ef" stroke-width="4" stroke-linecap="square"/>
+      <text x="711" y="163" font-size="22" font-weight="700">Confidential USDC</text>
+      <text x="711" y="190" font-size="15">For the organizer</text>
+    </g>
+  </g>
+</svg>

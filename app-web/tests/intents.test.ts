@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import {expect,test,vi} from 'vitest';
 import {verifyQuoteSignature,type QuoteResponse} from '@defuse-protocol/one-click-sdk-typescript';
 import {ASSETS,assessSettlement,intentsProvider,isTransparentZcashAddress,paymentQuoteRequest,quotePreview,validatePaymentQuote,type VerifiedQuote} from '../lib/providers/intents';
-const evidence=JSON.parse(readFileSync(new URL('../../docs/technical/evidence/probe-results.json',import.meta.url),'utf8'));
+const evidence=JSON.parse(readFileSync(new URL('./fixtures/probe-results.json',import.meta.url),'utf8'));
 const saved=evidence['unfunded-public'].response as VerifiedQuote;
 const route={method:'zcash' as const,amountUnits:'15000000',recipient:'0x'+'33'.repeat(20),refundTo:'t1WpZWUJcC8FdKUJH6JjKQ7qCFoHiUkBHBX'};
 const now=Date.now();

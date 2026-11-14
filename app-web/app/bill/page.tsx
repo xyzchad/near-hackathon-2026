@@ -49,7 +49,7 @@ export default function Bill() {
   }, []);
   if (!data)
     return (
-      <Shell>
+      <Shell notice={null}>
         <div className="flow">
           <ErrorMessage message={error} />
           {!error && <Loading />}
