@@ -17,8 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test",
-    "check:intents": "node --env-file=.env.local ./node_modules/vitest/vitest.mjs run --config vitest.live.config.ts"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
