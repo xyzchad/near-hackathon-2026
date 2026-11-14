@@ -10,9 +10,9 @@ Split a shared receipt into individual USDC reimbursement requests. Built for fr
 
 ## How it works
 
-1. Upload a receipt or enter a bill manually, then confirm its total and currency. Receipt extraction is not yet connected, so uploaded details must be entered manually.
-2. Enter the organizer's Confidential Intents receiving address and review the equal USDC shares. The organizer's own share is excluded from reimbursement requests.
-3. Share each private checkout link with its intended payer and use the organizer link to track progress. Solana and Zcash requests use separate deposit addresses for each payer; the app rejects a duplicate before displaying it.
+1. Upload a receipt or enter a bill manually → confirm its total and currency. Receipt extraction is not yet connected, so uploaded details must be entered manually.
+2. Enter the organizer's Confidential Intents receiving address → review equal USDC shares, excluding the organizer's own share.
+3. Share each private checkout link → each payer sees their own request and the organizer sees repayment progress. Solana and Zcash quotes use separate deposit addresses for each payer; the app rejects a duplicate before displaying it.
 
 The public app can create real payment requests for **Zcash from VIZOR or Zodl** and **Solana USDC**, routed through NEAR Intents toward the organizer's confidential USDC balance. Wallet compatibility and refunds still need broader verification. Sending from an existing NEAR Confidential Intents balance is not enabled.
 
@@ -27,6 +27,10 @@ Privacy depends on the payment route. A shielded Zcash source does not make ever
 - **Real-World Money**: stablecoin reimbursements for shared real-world expenses.
 - **Privacy & Private AI**: shielded-source Zcash and confidential receiving, with route-specific privacy limits; receipt processing is not private AI.
 - **Social Money**: separate payer links and shared reimbursement progress for a group.
+
+## Build provenance
+
+The application was built during the November 2026 NEAR HACKATHON. The [initial workspace commit](https://github.com/youngjei/near-hackathon-2026/commit/9a1d14f) contains preparation research; [the subsequent diff](https://github.com/youngjei/near-hackathon-2026/compare/9a1d14f...main) shows the application work. No existing Split/d/bill app or external app template was reused. The project uses React, Next.js, Vinext, Supabase, Drizzle, NEAR Connect and the NEAR Intents SDK; Codex assisted with research and implementation.
 
 Project code and documentation are available under the [MIT License](LICENSE). The bundled Space Grotesk font retains its own Open Font License.
 
