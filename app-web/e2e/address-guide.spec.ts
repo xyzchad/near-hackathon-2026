@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 test('address guide shows annotated instructions and returns focus',async({page})=>{
  await page.route('**/api/config',r=>r.fulfill({json:{ocr:false,live:{enabled:false}}}));
  await page.goto('/');
- await page.getByRole('button',{name:'Try a sample bill'}).click();
+ await page.getByRole('button',{name:'Enter details manually'}).click();
  const trigger=page.getByRole('button',{name:'Where do I find this?'});
  await trigger.click();
  const dialog=page.getByRole('dialog',{name:'Find your near.com address'});
