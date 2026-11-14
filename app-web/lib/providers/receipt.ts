@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { moneyInput, currencies } from "../money";
 export const extractedReceipt = z.object({
-  merchant: z.string().max(80),
+  merchant: z.string().trim().min(1).max(80),
   total: moneyInput,
   currency: z.enum(currencies),
-});
+}).strict().refine((value) => Number(value.total) > 0);
 export function imageType(
   bytes: Uint8Array,
 ): "image/jpeg" | "image/png" | "image/webp" | null {
@@ -19,7 +19,7 @@ export function imageType(
     return "image/webp";
   return null;
 }
-// Credentialed adapter; disabled in the public demo. Never invent OCR output.
+// Server-only adapter. Never invent OCR output.
 export async function extractReceipt(
   bytes: Uint8Array,
   mime: string,

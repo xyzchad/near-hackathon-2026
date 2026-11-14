@@ -15,14 +15,18 @@ export default function CreateBill() {
   const [liveTesting, setLiveTesting] = useState(false);
   const [publicPilot, setPublicPilot] = useState<boolean | null>(null);
   const [sampleMode, setSampleMode] = useState(false);
+  const [ocrAvailable, setOcrAvailable] = useState(false);
+  const [useOcr, setUseOcr] = useState(false);
+  const [needsReceiptReview, setNeedsReceiptReview] = useState(false);
   const mode = publicPilot === true || (liveEnabled && !sampleMode) ? "live" : "demo";
   useEffect(() => {
     let cancelled = false;
-    api<{publicPilot: boolean; live: {enabled: boolean; testing?: boolean}}>("config").then(config => {
+    api<{ocr: boolean; publicPilot: boolean; live: {enabled: boolean; testing?: boolean}}>("config").then(config => {
       if (!cancelled) {
         setLiveEnabled(config.live.enabled);
         setLiveTesting(config.live.testing === true);
         setPublicPilot(config.publicPilot);
+        setOcrAvailable(config.ocr);
       }
     }).catch(() => {});
     return () => { cancelled = true; };
@@ -42,7 +46,7 @@ export default function CreateBill() {
   const [merchant, setMerchant] = useState(""),
     [total, setTotal] = useState(""),
     [extra, setExtra] = useState("0"),
-    [currency, setCurrency] = useState("AED"),
+    [currency, setCurrency] = useState(""),
     [diners, setDiners] = useState(4);
   const [recipient, setRecipient] = useState("");
   const [recipientError, setRecipientError] = useState("");
@@ -57,6 +61,7 @@ export default function CreateBill() {
     requestKey = useRef("");
   function sample() {
     setSampleMode(true);
+    setNeedsReceiptReview(false);
     requestKey.current = "";
     setMerchant("Dinner in Dubai");
     setTotal("200.00");
@@ -82,16 +87,21 @@ export default function CreateBill() {
       await api("session", {});
       const r = await fetch("/api/receipts", {
         method: "POST",
-        headers: { "Content-Type": file.type },
+        headers: { "Content-Type": file.type, "X-Receipt-Ocr": String(useOcr) },
         body: file,
       });
       const d = (await r.json()) as {
         error?: string;
         receiptId: string;
         message: string;
+        extracted: { merchant: string; total: string; currency: typeof currencies[number] } | null;
       };
       if (!r.ok) throw new Error(d.error);
       setReceiptId(d.receiptId);
+      setNeedsReceiptReview(!!d.extracted);
+      setMerchant(d.extracted?.merchant ?? "");
+      setTotal(d.extracted?.total ?? "");
+      setCurrency(d.extracted?.currency ?? "");
       if (preview.startsWith("blob:")) URL.revokeObjectURL(preview);
       setPreview(URL.createObjectURL(file));
       setNote(d.message);
@@ -204,12 +214,15 @@ export default function CreateBill() {
               </span>
               <span className="file-hint">JPG, PNG or WebP · up to 5 MB</span>
             </button>
+            {ocrAvailable && <label className="inline-note"><input type="checkbox" checked={useOcr} onChange={(e) => setUseOcr(e.target.checked)} disabled={busy} /> Send this receipt image to NEAR AI for automatic reading. Some models use an upstream provider. Review all suggestions before continuing.</label>}
             <div className="start-actions">
               <button
                 className="text-button"
                 disabled={busy || !hydrated}
                 onClick={() => {
                   setSampleMode(false);
+                  setCurrency("");
+                  setNeedsReceiptReview(false);
                   requestKey.current = "";
                   setStep("details");
                   setNote("");
@@ -248,12 +261,13 @@ export default function CreateBill() {
             )}
             {note && <p className="inline-note">{note}</p>}
             <form onSubmit={review}>
+              {needsReceiptReview && <label className="inline-note"><input type="checkbox" required /> I checked these suggestions against the receipt. I understand they may be incorrect.</label>}
               <label className="field">
                 Bill name
                 <input
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
-                  placeholder="Dinner in Dubai"
+                  placeholder="Dinner with friends"
                   maxLength={80}
                   required
                   autoComplete="off"
@@ -275,7 +289,9 @@ export default function CreateBill() {
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
+                    required
                   >
+                    <option value="" disabled>Select currency</option>
                     {currencies.map((c) => (
                       <option key={c}>{c}</option>
                     ))}

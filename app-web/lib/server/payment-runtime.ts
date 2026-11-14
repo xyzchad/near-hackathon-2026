@@ -7,6 +7,7 @@ export function paymentOptions(settings: Record<string, string | undefined>, liv
   const publicPilot = native && settings.PUBLIC_LIVE_PILOT === "true" && settings.STANDALONE_PRIVATE_ACCESS !== "true";
   return {
     publicPilot,
+    ocr: settings.OCR_ENABLED === "true" && settings.NEAR_AI_API_KEY && settings.NEAR_AI_MODEL ? { key: settings.NEAR_AI_API_KEY, model: settings.NEAR_AI_MODEL } : undefined,
     readiness: paymentReadiness(settings, liveTestOwnerAuthorized || (publicPilot && settings.LIVE_PAYMENT_TESTING === "true")),
     receiptCleanupEnabled: settings.RECEIPT_CLEANUP_ENABLED === "true",
     // Applied only after the API validates the specific share capability.

@@ -40,3 +40,7 @@ npm run test:e2e
 ```
 
 These run TypeScript, Vitest and Playwright checks respectively. Install Playwright browsers with `npx playwright install` if needed. The sample and simulated settlement do not establish live payment or refund acceptance.
+
+## Optional receipt reading
+
+Set `OCR_ENABLED=true` and server-only `NEAR_AI_API_KEY` and `NEAR_AI_MODEL` on the deployed runtime (native Next.js environment or Sites worker secrets/settings) to enable optional receipt extraction. Choose an available image-input model with a suitable [NEAR AI privacy tier](https://docs.near.ai/cloud/models), and verify access and quality before enabling it. Users opt in before upload and must review suggestions. If extraction fails or the hourly OCR budget is exhausted, the saved receipt remains available for manual entry. Do not put the key in browser code or version control. This application does not verify attestation or response signatures.
