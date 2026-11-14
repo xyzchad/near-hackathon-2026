@@ -23,8 +23,7 @@ test("live gates keep payment requests and simulation separate", async ({ page }
   await expect(page.getByText("Demo · No real payments")).toHaveCount(0);
   await expect(page.getByText("Simulate successful payment")).toHaveCount(0);
   await expect(page.locator('a[href^="zcash:"]')).toHaveCount(0);
-  await page.getByRole("radio", { name: /NEAR Confidential balance/ }).check();
-  await expect(page.getByText("Confidential USDC is not available yet.")).toBeVisible();
+  await expect(page.getByRole("radio", { name: /NEAR Confidential balance/ })).toHaveCount(0);
 });
 
 test("allocated instructions survive gate closure, expire, and retain late-payment history", async ({ page }) => {

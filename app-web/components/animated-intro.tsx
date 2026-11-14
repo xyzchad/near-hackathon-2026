@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type Ref } from "react";
 import "./animated-intro.css";
 
-const phrases = ["Photograph a receipt.", "Split the amount.", "Send payment requests.", "Get paid back privately."];
+const phrases = ["Photograph a receipt.", "Split the amount.", "Send payment requests.", "Get paid back in USDC."];
 const arrival = 500;
 const hold = 2400;
 // The next arrival shares the outgoing phrase's 500ms exit: no empty beat.
