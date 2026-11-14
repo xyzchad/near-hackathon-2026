@@ -2,7 +2,7 @@ import { z } from "zod";
 import { allocation, billInput, currencies } from "../money";
 import { shareStatus, transition, Status } from "../payments";
 import { getRate } from "../providers/fx";
-import { imageType } from "../providers/receipt";
+import { imageType, extractReceipt } from "../providers/receipt";
 import { receivingAccount, displayReceivingAddress } from "../receiving";
 import { liveReadiness, paymentReadiness } from "../providers/near";
 import { IntentsError } from "../providers/intents";
@@ -23,6 +23,7 @@ import type { Store, Bill, Share, Attempt } from "./store";
 const uuid = z.string().uuid();
 export type PaymentOptions = {
   publicPilot?: boolean;
+  ocr?: { key: string; model: string };
   receiptCleanupEnabled?: boolean;
   provider?: LivePaymentProvider;
   readiness?: ReturnType<typeof paymentReadiness>;
@@ -30,7 +31,7 @@ export type PaymentOptions = {
 };
 // Shared hourly circuit breakers, independent of the replaceable session cookie.
 // These bound cost, not abuse by individual clients or denial of service.
-export const PUBLIC_HOURLY_BUDGETS = { fx: 1000, upload: 100, create: 200, quote: 200 } as const;
+export const PUBLIC_HOURLY_BUDGETS = { fx: 1000, upload: 100, ocr: 20, create: 200, quote: 200 } as const;
 export function createHandler(store: Store, cronSecret?: string, payments: PaymentOptions = {}) {
   const readiness = payments.readiness ?? liveReadiness;
   async function limit(key: string, max: number) {
@@ -181,7 +182,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
           mode: readiness.enabled ? "live" : "demo",
           publicPilot: payments.publicPilot === true,
           live: readiness,
-          ocr: false,
+          ocr: !!payments.ocr,
           storage: true,
           storageProvider: store.kind,
         });
@@ -219,12 +220,21 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
           },
           bytes,
         );
+        let extracted: Awaited<ReturnType<typeof extractReceipt>> | null = null;
+        if (req.headers.get("x-receipt-ocr") === "true" && payments.ocr) {
+          try {
+            await limit("global:ocr", PUBLIC_HOURLY_BUDGETS.ocr);
+            await limit("ocr:" + ownerHash, 3);
+            extracted = await extractReceipt(bytes, mime, payments.ocr.key, payments.ocr.model);
+          } catch { /* Keep the saved receipt and allow manual entry. */ }
+        }
         return json(
           {
             receiptId,
-            extracted: null,
-            message:
-              "Receipt saved. Enter the total and currency below; automatic reading is not available yet.",
+            extracted,
+            message: extracted
+              ? "Check and confirm the suggested details against your receipt."
+              : "Receipt saved. Enter the details below; automatic reading was not available or did not succeed.",
           },
           201,
         );
