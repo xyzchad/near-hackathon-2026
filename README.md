@@ -1,80 +1,33 @@
 # split/d/bill
 
-**Split a receipt into individual reimbursement requests.** split/d/bill helps friends meeting across borders confirm a shared bill, calculate equal USDC shares, give each payer a separate checkout link, and follow repayment progress.
+<img src="app-web/public/app-icon-192.png" alt="split/d/bill icon" width="96" />
 
-The idea came from a friend at an international crypto event. After a shared meal, splitting the total and converting currencies by hand was cumbersome; some guests wanted to pay with shielded ZEC, and the organizer was concerned about sharing a main wallet address. split/d/bill turns the receipt into individual reimbursement requests and explains privacy by payment route.
+Split a shared receipt into individual USDC reimbursement requests. Built for friends meeting across borders who use different currencies and want to keep the organizer's personal wallet out of the group chat.
 
-The product contribution is the receipt-to-request flow. NEAR Intents is integrated for supported cross-chain payment routing toward an organizer's Confidential Intents USDC balance. Privacy varies by route: ordinary Solana USDC transfers expose sender and amount, Zcash deposit details can be public, and providers process routing data. The app does not claim universal anonymity.
+[Open split/d/bill](https://split-d-bill.vercel.app)
 
-![split/d/bill home screen using the synthetic sample flow](docs/hackathon/assets/home-mobile.png)
+![One receipt becomes separate payment requests and confidential USDC for the organizer](docs/flow.svg)
 
-[![Split/d/bill demo poster: £200 London bill becomes individual requests](docs/hackathon/assets/demo-poster.png)](docs/hackathon/assets/demo.mp4)
+## How it works
 
-[Watch the 25-second desktop and mobile demo](docs/hackathon/assets/demo.mp4) — a synthetic £200 London receipt is uploaded and reviewed, split into USDC shares, and followed through a mobile checkout and simulated organizer progress. The uploaded GBP receipt shown in the video is separate from the built-in 200 AED local sample below. Payment success is simulated; no funds move and the demo does not execute a quote or transfer. The selected cut uses an AI-generated fan-made Cartman voice, unaffiliated with South Park and its rights holders. Third-party promotional rights have not been verified. See [demo asset notes](docs/hackathon/assets/DEMO_ASSETS.md).
+1. Upload a receipt or enter a bill manually, then confirm its total and currency. Receipt extraction is not yet connected, so uploaded details must be entered manually.
+2. Enter the organizer's Confidential Intents receiving address and review the equal USDC shares. The organizer's own share is excluded from reimbursement requests.
+3. Share each private checkout link with its intended payer and use the organizer link to track progress. Solana and Zcash requests use separate deposit addresses for each payer; the app rejects a duplicate before displaying it.
 
-## Try the local demo
+The public app can create real payment requests for **Zcash from VIZOR or Zodl** and **Solana USDC**, routed through NEAR Intents toward the organizer's confidential USDC balance. Wallet compatibility and refunds still need broader verification. Sending from an existing NEAR Confidential Intents balance is not enabled.
 
-Requirements: Node.js 24 and npm. No credentials or wallet are needed for the local simulation.
+## Privacy
 
-From the repository root:
+Each payer receives a separate private checkout link; anyone with a link can access its associated request, so share it carefully. The organizer recovery link grants access to the bill and should also be kept private.
 
-```sh
-cd app-web
-node --version
-npm ci
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_organic_jimmy_woo.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_complete_bruce_banner.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_durable_live_payments.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_unique_live_deposit.sql
-npm run dev -- --port 5173
-```
-
-Expected result: `node --version` reports v24.x and the local app is available at [http://127.0.0.1:5173](http://127.0.0.1:5173). Keep the server running while following these steps:
-
-1. Choose **Try a sample bill** → see a synthetic 200 AED receipt and the **Demo · No real payments** label.
-2. Enter `nearcom:demo.near` as the synthetic organizer receiving address (never send funds to it), confirm the sample bill details, and choose **Review split** → see the dated reference conversion and equal USDC shares. The organizer's share is excluded from reimbursements.
-3. Create demo requests → see separate private checkout links for the other diners.
-4. Open a share checkout → choose a payment method → choose **Try … demo** → see demo payment controls; no fundable address or wallet link is created.
-5. Choose **Simulate successful payment** → return to the organizer page and see that share marked paid in demo. Reload the page → see the persisted simulated status.
-
-![Organizer view with one synthetic share paid in demo and two outstanding](docs/hackathon/assets/organizer-progress-demo.png)
-
-The sample receipt and simulated payment outcomes are synthetic. The conversion is a dated fiat reference rate with a labelled demo fallback; it is not a payment quote. Simulation does not create an executable quote, wallet request, signature, transfer, or settlement. Upload is available, but OCR is not connected; uploaded receipts require manual confirmation.
-
-![Synthetic checkout showing the three payment choices and demo controls](docs/hackathon/assets/checkout-demo.png)
-
-Apply the four local D1 migrations only once to a fresh local database. The `.wrangler/` folder contains disposable local data and is ignored by Git. `npm run start -- --port 5173` previews a production build against this same local database. More options and setup details are in [app-web/README.md](app-web/README.md).
-
-## What is implemented
-
-- Receipt upload or manual entry, manual total confirmation, equal cent-accurate splitting, dated fiat reference conversions, and persisted bill/share records.
-- Private per-diner checkout capabilities and organizer recovery links, separate status views, private receipt access, and simulated settlement tracking.
-- Payment adapters for Zcash (VIZOR or Zodl), existing NEAR Confidential Intents balances, and Solana USDC. The Solana route discloses public sender/amount visibility; wallet branding does not change that.
-- Verified dry quotes for the supported routes, immutable organizer receiving-account binding, quote allocation, settlement reconciliation, and NEP-413 signing for compatible external NEAR wallets.
-- A public Vercel pilot that permits real Solana/Zcash payment requests; the separate Sites preview remains owner-private. Confidential-balance sending remains disabled. A user-supplied screenshot shows a live Solana checkout marked “Payment complete” for 20.50 USDC, and the user confirms the near.com confidential recipient balance received it. The transaction and balance were not independently verified; wallet/device and refund acceptance remain incomplete and all acceptance flags remain false.
-
-The [Vercel public pilot](https://split-d-bill.vercel.app) allows anyone with the URL to create a live bill and real Solana/Zcash payment requests. Each payer needs their individual private share capability. Confidential sending is disabled and all acceptance flags are false; wallet/device, refund and full funded acceptance remain outstanding despite the reported Solana payment and recipient credit. Receipt cleanup is disabled. Sample bills remain simulations. The separate Sites preview remains owner-private.
+Privacy depends on the payment route. A shielded Zcash source does not make every part of a payment private: deposit details can be public and routing providers process payment data. Ordinary Solana USDC transfers expose the sender and amount on-chain. The app does not promise universal anonymity or unlinkability. See [privacy details](docs/technical/PRIVACY.md).
 
 ## NEAR Hackathon tracks
 
-- **Real-World Money (`realworld`)** — split a real-world shared expense into stablecoin reimbursement requests, with NEAR Intents as the intended routing layer. This is the clearest fit.
-- **Privacy & Private AI (`privacy`)** — supports shielded-source ZEC and Confidential Intents receiving/payment paths, with specific privacy explanations and limits. No universal anonymity, end-to-end unlinkability, or private-AI receipt processing is claimed.
-- **Social Money (`social`)** — coordinates a small group expense through separate payer links and shared reimbursement status. The app does not integrate Sputnik DAO or Trezu; track hints are not implementation requirements.
+- **Real-World Money**: stablecoin reimbursements for shared real-world expenses.
+- **Privacy & Private AI**: shielded-source Zcash and confidential receiving, with route-specific privacy limits; receipt processing is not private AI.
+- **Social Money**: separate payer links and shared reimbursement progress for a group.
 
-## Build baseline, reused software, and AI assistance
+Project code and documentation are available under the [MIT License](LICENSE). The bundled Space Grotesk font retains its own Open Font License.
 
-The tracked project history starts with workspace commit [`9a1d14f`](https://github.com/youngjei/near-hackathon-2026/commit/9a1d14f) on November 9, 2026. That commit contains hackathon preparation and project research; the `app-web/` application was added during the hackathon window beginning November 10. There is no pre-November 1 application baseline in this repository. To review the project work from the initial workspace commit to the checked-out revision, run `git diff --stat 9a1d14f..HEAD`.
-
-The app uses open-source runtime and UI libraries, including React, Next.js, Vinext, Supabase, Drizzle ORM, and NEAR Connect; exact versions are pinned in `app-web/package-lock.json`. No external app template or pre-existing splitdbill codebase was used. Space Grotesk is distributed under the SIL Open Font License in `app-web/public/fonts/OFL-Space-Grotesk.txt`. Research references and third-party prompt files under `docs/hackathon/reference/` retain their original authorship and are not project code.
-
-Project-authored code and documentation are released under the [MIT License](LICENSE). The bundled font and third-party reference material retain their own terms.
-
-Codex assisted with research, implementation, and documentation; the project owner directed product decisions and reviewed changes. The optional NEAR AI receipt adapter is not connected to the demo, and no model call is made when using the sample flow.
-
-## Further reading
-
-- [Current project status](docs/project/STATUS.md) · [Decisions](docs/project/DECISIONS.md) · [Build log](docs/project/BUILD_LOG.md)
-- [Beta scope](docs/project/BETA_SCOPE.md) · [Privacy findings and limits](docs/technical/PRIVACY.md) · [Payment adapter status](docs/technical/PAYMENT_ADAPTER.md)
-- [Application setup, validation and wallet limits](app-web/README.md)
-- [Hackathon brief and reproducible submission checklist](docs/hackathon/BRIEF.md) · [Demo recording plan](docs/hackathon/DEMO_PLAN.md)
+[Developer setup](app-web/README.md) · [Architecture](docs/technical/ARCHITECTURE.md)

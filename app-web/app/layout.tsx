@@ -3,7 +3,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "split/d/bill",
   description:
-    "Split a receipt and track reimbursements in USDC. Private demo.",
+    "Split a receipt and track reimbursements in USDC.",
   referrer: "no-referrer",
   applicationName: "split/d/bill",
   manifest: "/site.webmanifest?v=petrol-1",

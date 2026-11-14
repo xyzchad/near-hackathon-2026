@@ -78,7 +78,7 @@ export default function Pay() {
   }
   if (!data)
     return (
-      <Shell>
+      <Shell notice={null}>
         <div className="flow payment-flow">
           <ErrorMessage message={error} />
           {!error && <Loading />}
@@ -111,6 +111,8 @@ export default function Pay() {
         <div className="payment-flow" aria-busy={busy}>
         {data.bill.mode === "live" ? (
           <LivePayment data={data} onChange={setData} />
+        ) : data.publicPilot ? (
+          <p className="inline-note" role="status">This demo payment is unavailable on this deployment.</p>
         ) : state === "paid" ? (
           <div className="payment-result" role="status">
             <SuccessMark />
@@ -169,7 +171,7 @@ export default function Pay() {
             </button>
           </>
         )}
-        {data.bill.mode !== "live" && data.attempts.length > 0 && (
+        {data.bill.mode !== "live" && !data.publicPilot && data.attempts.length > 0 && (
           <details className="demo-controls">
             <summary>Test another outcome</summary>
             <p className="field-hint">
