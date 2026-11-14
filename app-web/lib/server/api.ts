@@ -3,6 +3,7 @@ import { allocation, billInput, currencies } from "../money";
 import { shareStatus, transition, Status } from "../payments";
 import { getRate } from "../providers/fx";
 import { imageType, extractReceipt, ReceiptExtractionError } from "../providers/receipt";
+import { extractReceiptWithOcrSpace } from "../providers/ocr-space";
 import { receivingAccount, displayReceivingAddress } from "../receiving";
 import { liveReadiness, paymentReadiness } from "../providers/near";
 import { IntentsError } from "../providers/intents";
@@ -23,7 +24,7 @@ import type { Store, Bill, Share, Attempt } from "./store";
 const uuid = z.string().uuid();
 export type PaymentOptions = {
   publicPilot?: boolean;
-  ocr?: { key: string; model: string };
+  ocr?: { provider: "near-ai"; key: string; model: string } | { provider: "ocr-space"; key: string };
   receiptCleanupEnabled?: boolean;
   provider?: LivePaymentProvider;
   readiness?: ReturnType<typeof paymentReadiness>;
@@ -183,6 +184,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
           publicPilot: payments.publicPilot === true,
           live: readiness,
           ocr: !!payments.ocr,
+          ocrProvider: payments.ocr?.provider ?? null,
           storage: true,
           storageProvider: store.kind,
         });
@@ -220,20 +222,31 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
           },
           bytes,
         );
-        let extracted: Awaited<ReturnType<typeof extractReceipt>> | null = null;
+        let extracted: Awaited<ReturnType<typeof extractReceiptWithOcrSpace>> | null = null;
+        let ocrMessage: string | undefined;
         if (req.headers.get("x-receipt-ocr") === "true" && payments.ocr) {
-          try {
-            await limit("global:ocr", PUBLIC_HOURLY_BUDGETS.ocr);
-            await limit("ocr:" + ownerHash, 3);
-            extracted = await extractReceipt(bytes, mime, payments.ocr.key, payments.ocr.model);
-          } catch (error) {
-            // Log only a fixed category. Never log the receipt, model response, or key.
-            const category = error instanceof ReceiptExtractionError
-              ? error.code
-              : error instanceof HttpError
-                ? "rate_limit"
-                : "network_or_timeout";
-            console.warn("Receipt extraction unavailable", category);
+          if (req.headers.get("x-receipt-ocr-provider") !== payments.ocr.provider) {
+            ocrMessage = "Receipt saved. The reading provider changed; refresh the page or enter the details manually.";
+          } else if (payments.ocr.provider === "ocr-space" && mime === "image/webp") {
+            ocrMessage = "Receipt saved. Automatic reading needs a JPG or PNG image; enter the details manually.";
+          } else if (payments.ocr.provider === "ocr-space" && bytes.byteLength > 1_000_000) {
+            ocrMessage = "Receipt saved. Automatic reading accepts images up to 1 MB; enter the details manually.";
+          } else {
+            try {
+              await limit("global:ocr", PUBLIC_HOURLY_BUDGETS.ocr);
+              await limit("ocr:" + ownerHash, 3);
+              extracted = payments.ocr.provider === "ocr-space"
+                ? await extractReceiptWithOcrSpace(bytes, mime, payments.ocr.key)
+                : await extractReceipt(bytes, mime, payments.ocr.key, payments.ocr.model);
+            } catch (error) {
+              // Log only a fixed category. Never log the receipt, model response, or key.
+              const category = error instanceof ReceiptExtractionError
+                ? error.code
+                : error instanceof HttpError
+                  ? "rate_limit"
+                  : "network_or_timeout";
+              console.warn("Receipt extraction unavailable", category);
+            }
           }
         }
         return json(
@@ -242,7 +255,7 @@ export function createHandler(store: Store, cronSecret?: string, payments: Payme
             extracted,
             message: extracted
               ? "Check and confirm the suggested details against your receipt."
-              : "Receipt saved. Enter the details below; automatic reading was not available or did not succeed.",
+              : ocrMessage ?? "Receipt saved. Enter the details below; automatic reading was not available or did not succeed.",
           },
           201,
         );

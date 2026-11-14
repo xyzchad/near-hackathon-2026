@@ -10,7 +10,7 @@ Split a shared receipt into individual USDC reimbursement requests. Built for fr
 
 ## How it works
 
-1. Upload a receipt or enter a bill manually → confirm its total and currency. Optional NEAR AI receipt reading can suggest details when configured; review and confirm every suggestion. Otherwise enter them manually.
+1. Upload a receipt or enter a bill manually → confirm its total and currency. Optional receipt reading can suggest details when configured; review and confirm every suggestion. Otherwise enter them manually.
 2. Enter the organizer's Confidential Intents receiving address → review equal USDC shares, excluding the organizer's own share.
 3. Share each private checkout link → each payer sees their own request and the organizer sees repayment progress. Solana and Zcash quotes use separate deposit addresses for each payer; the app rejects a duplicate before displaying it.
 
@@ -25,7 +25,7 @@ Privacy depends on the payment route. A shielded Zcash source does not make ever
 ## NEAR Hackathon tracks
 
 - **Real-World Money**: stablecoin reimbursements for shared real-world expenses.
-- **Privacy & Private AI**: shielded-source Zcash and confidential receiving, with route-specific privacy limits; optional receipt reading uses NEAR AI when configured; its privacy depends on the selected model and deployment.
+- **Privacy & Private AI**: shielded-source Zcash and confidential receiving, with route-specific privacy limits; optional receipt reading sends the image to a configured provider with your consent; provider privacy terms apply.
 - **Social Money**: separate payer links and shared reimbursement progress for a group.
 
 ## Build provenance
