@@ -5,6 +5,12 @@ export const extractedReceipt = z.object({
   total: moneyInput,
   currency: z.enum(currencies),
 }).strict().refine((value) => Number(value.total) > 0);
+export class ReceiptExtractionError extends Error {
+  constructor(readonly code: string) {
+    super("Receipt reading failed");
+    this.name = "ReceiptExtractionError";
+  }
+}
 export function imageType(
   bytes: Uint8Array,
 ): "image/jpeg" | "image/png" | "image/webp" | null {
@@ -61,13 +67,23 @@ export async function extractReceipt(
       ],
     }),
   });
-  if (!r.ok)
-    throw new Error("Could not read the receipt. Enter the details below.");
-  const data = (await r.json()) as {
+  if (!r.ok) throw new ReceiptExtractionError(`upstream_http_${r.status}`);
+  let data: {
     choices?: { message?: { content?: string } }[];
   };
+  try {
+    data = await r.json();
+  } catch {
+    throw new ReceiptExtractionError("response_json");
+  }
   const raw = data.choices?.[0]?.message?.content || "";
-  return extractedReceipt.parse(
-    JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, "")),
-  );
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, ""));
+  } catch {
+    throw new ReceiptExtractionError("content_json");
+  }
+  const result = extractedReceipt.safeParse(parsed);
+  if (!result.success) throw new ReceiptExtractionError("invalid_fields");
+  return result.data;
 }
