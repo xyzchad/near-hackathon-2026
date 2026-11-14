@@ -1,4 +1,4 @@
-> November 11 implementation update: durable live quote allocation, confidential NEP-413 signing through compatible external NEAR wallets, private status reconciliation and checkout are implemented behind disabled gates. Supabase migration 005 is applied. See [current compatibility](WALLET_COMPATIBILITY.md). Historical pending-implementation statements below describe earlier checkpoints; actual device/refund/funded acceptance remains outstanding.
+> November 15 evidence update: the user supplied a live Solana checkout screenshot marked “Payment complete” for 20.50 USDC and confirms the near.com confidential recipient balance received it. Transaction and balance were not independently verified; refund and full device/funded acceptance remain outstanding. Historical statements below describe earlier checkpoints. Durable live quote allocation, confidential NEP-413 signing through compatible external NEAR wallets, private status reconciliation and checkout are implemented. See [current compatibility](WALLET_COMPATIBILITY.md).
 
 # Payment adapter and near.com connection
 

@@ -1,5 +1,11 @@
 # Decision log
 
+## 2026-11-15 — Record reported payment and preserve refund destination
+
+A user-supplied screenshot shows a live Solana checkout marked “Payment complete” for 20.50 USDC, and the user confirms the near.com confidential recipient balance received it. Neither the transaction nor balance was independently verified. Keep all acceptance flags false pending the remaining wallet/device and refund checks. Migration 007 prevents duplicate saved live deposit address/memo pairs; because Solana memo-dependent quotes are rejected, displayed Solana deposit addresses must differ, without a provider uniqueness guarantee.
+
+Keep the explicit payer-controlled refund destination for live quotes: 1Click requires `refundTo` before payment, so the source address cannot be inferred when creating the quote; a shielded Zcash source is not publicly exposed. This records existing behavior.
+
 ## 2026-11-14 — Open the Vercel pilot
 
 Operate native Vercel as a public real-funds testing pilot while keeping the separate Sites preview owner-private. Anyone with the URL may create a live bill; scoped capabilities protect payer and organizer access. Enable Solana and Zcash testing with the provider and global switches, leave confidential sending and every acceptance flag off, and keep receipt cleanup disabled until migration 008 is applied and cleanup is enabled separately. One WAF rule and shared application budgets constrain abuse but do not establish funded acceptance or eliminate denial-of-service risk. Wallet/device, refund and confidential-credit acceptance remain outstanding.
