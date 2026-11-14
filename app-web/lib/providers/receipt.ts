@@ -1,8 +1,15 @@
 import { z } from "zod";
 import { moneyInput, currencies } from "../money";
-export const extractedReceipt = z.object({
+const receiptFields = {
   merchant: z.string().trim().min(1).max(80),
   total: moneyInput,
+};
+export const receiptSuggestion = z.object({
+  ...receiptFields,
+  currency: z.enum(currencies).optional(),
+}).strict().refine((value) => Number(value.total) > 0);
+export const extractedReceipt = z.object({
+  ...receiptFields,
   currency: z.enum(currencies),
 }).strict().refine((value) => Number(value.total) > 0);
 export class ReceiptExtractionError extends Error {

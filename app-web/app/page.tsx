@@ -16,17 +16,19 @@ export default function CreateBill() {
   const [publicPilot, setPublicPilot] = useState<boolean | null>(null);
   const [sampleMode, setSampleMode] = useState(false);
   const [ocrAvailable, setOcrAvailable] = useState(false);
+  const [ocrProvider, setOcrProvider] = useState<"near-ai" | "ocr-space" | null>(null);
   const [useOcr, setUseOcr] = useState(false);
   const [needsReceiptReview, setNeedsReceiptReview] = useState(false);
   const mode = publicPilot === true || (liveEnabled && !sampleMode) ? "live" : "demo";
   useEffect(() => {
     let cancelled = false;
-    api<{ocr: boolean; publicPilot: boolean; live: {enabled: boolean; testing?: boolean}}>("config").then(config => {
+    api<{ocr: boolean; ocrProvider: "near-ai" | "ocr-space" | null; publicPilot: boolean; live: {enabled: boolean; testing?: boolean}}>("config").then(config => {
       if (!cancelled) {
         setLiveEnabled(config.live.enabled);
         setLiveTesting(config.live.testing === true);
         setPublicPilot(config.publicPilot);
         setOcrAvailable(config.ocr);
+        setOcrProvider(config.ocrProvider);
       }
     }).catch(() => {});
     return () => { cancelled = true; };
@@ -87,14 +89,14 @@ export default function CreateBill() {
       await api("session", {});
       const r = await fetch("/api/receipts", {
         method: "POST",
-        headers: { "Content-Type": file.type, "X-Receipt-Ocr": String(useOcr) },
+        headers: { "Content-Type": file.type, "X-Receipt-Ocr": String(useOcr), ...(useOcr && ocrProvider ? { "X-Receipt-Ocr-Provider": ocrProvider } : {}) },
         body: file,
       });
       const d = (await r.json()) as {
         error?: string;
         receiptId: string;
         message: string;
-        extracted: { merchant: string; total: string; currency: typeof currencies[number] } | null;
+        extracted: { merchant: string; total: string; currency?: typeof currencies[number] } | null;
       };
       if (!r.ok) throw new Error(d.error);
       setReceiptId(d.receiptId);
@@ -214,7 +216,7 @@ export default function CreateBill() {
               </span>
               <span className="file-hint">JPG, PNG or WebP · up to 5 MB</span>
             </button>
-            {ocrAvailable && <label className="inline-note"><input type="checkbox" checked={useOcr} onChange={(e) => setUseOcr(e.target.checked)} disabled={busy} /> Send this receipt image to NEAR AI for automatic reading. Some models use an upstream provider. Review all suggestions before continuing.</label>}
+            {ocrAvailable && ocrProvider && <label className="inline-note"><input type="checkbox" checked={useOcr} onChange={(e) => setUseOcr(e.target.checked)} disabled={busy} /> {ocrProvider === "ocr-space" ? "Send this JPG or PNG receipt to OCR.space for text reading (up to 1 MB)." : "Send this receipt image to NEAR AI for automatic reading. Some models use an upstream provider."} Review all suggestions before continuing.</label>}
             <div className="start-actions">
               <button
                 className="text-button"

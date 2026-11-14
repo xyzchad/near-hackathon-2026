@@ -70,3 +70,10 @@ test("pilot is native-only and share bypass requires an active private host", ()
   expect(paymentOptions({...publicSettings, STANDALONE_PRIVATE_ACCESS:"true"}, false, true).payerReadiness?.enabled).toBe(true);
   expect(paymentOptions({...publicSettings, PRIVATE_LIVE_TEST_HOST:"true"}).payerReadiness?.enabled).toBe(true);
 });
+
+test("OCR.space takes precedence only when enabled and keeps keys server-side", () => {
+  const ocrSettings = { OCR_ENABLED: "true", OCR_SPACE_API_KEY: "ocr-secret", NEAR_AI_API_KEY: "near-secret", NEAR_AI_MODEL: "vision-model" };
+  expect(paymentOptions(ocrSettings).ocr).toEqual({ provider: "ocr-space", key: "ocr-secret" });
+  expect(paymentOptions({ ...ocrSettings, OCR_SPACE_API_KEY: "" }).ocr).toEqual({ provider: "near-ai", key: "near-secret", model: "vision-model" });
+  expect(paymentOptions({ ...ocrSettings, OCR_ENABLED: "false" }).ocr).toBeUndefined();
+});
